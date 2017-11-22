@@ -1,2 +1,125 @@
 # H5
+
 http://terokarvinen.com/2017/aikataulu-palvelinten-hallinta-ict4tn022-3-5-op-uusi-ops-loppusyksy-2017-p5
+
+## a) Asenna Puppetin orjaksi vähintään kaksi eri käyttöjärjestelmää. (Tee alusta, pelkkä tunnilla tehdyn muistelu ei riitä).
+
+Käytän tehtävän orjina Microsoft Windows [Version 10.0.15063], sekä Xubuntu 16.04 LTS Vagrant virtuaalikoneella.
+
+# Masterin asetukset
+
+Asensin puppet masterin koneelle komennolla
+
+`sudo apt-get -y install puppetmaster`
+
+Tästä sain virheilmoituksen:
+
+```
+● puppetmaster.service - Puppet master
+   Loaded: loaded (/lib/systemd/system/puppetmaster.service; enabled; vendor preset: enabled)
+   Active: failed (Result: exit-code) since ke 2017-11-22 12:12:59 EET; 8ms ago
+  Process: 10684 ExecStart=/usr/bin/puppet master (code=exited, status=1/FAILURE)
+
+marras 22 12:12:59 einopuucee puppet-master[10684]: On the master:
+marras 22 12:12:59 einopuucee puppet-master[10684]:   puppet cert clean einopuucee.lan
+marras 22 12:12:59 einopuucee puppet-master[10684]: On the agent:
+marras 22 12:12:59 einopuucee puppet-master[10684]:   1a. On most platforms: find /var/lib/puppet/ssl -name ei...lete
+marras 22 12:12:59 einopuucee puppet-master[10684]:   1b. On Windows: del "/var/lib/puppet/ssl/einopuucee.lan.pem" /f
+marras 22 12:12:59 einopuucee puppet-master[10684]:   2. puppet agent -t
+marras 22 12:12:59 einopuucee systemd[1]: puppetmaster.service: Control process exited, code=exited status=1
+marras 22 12:12:59 einopuucee systemd[1]: Failed to start Puppet master.
+marras 22 12:12:59 einopuucee systemd[1]: puppetmaster.service: Unit entered failed state.
+marras 22 12:12:59 einopuucee systemd[1]: puppetmaster.service: Failed with result 'exit-code'.
+Hint: Some lines were ellipsized, use -l to show in full.
+dpkg: error processing package puppetmaster (--configure):
+ subprocess installed post-installation script returned error exit status 1
+Setting up ruby-atomic (1.1.16-2build5) ...
+Setting up ruby-thread-safe (0.3.5-3) ...
+Setting up ruby-tzinfo (1.2.2-1) ...
+Setting up ruby-activesupport (2:4.2.6-1) ...
+Setting up ruby-blankslate (3.1.3-1) ...
+Setting up ruby-builder (3.2.2-4) ...
+Setting up ruby-activemodel (2:4.2.6-1) ...
+Setting up ruby-arel (6.0.3-2) ...
+Setting up ruby-activerecord (2:4.2.6-1) ...
+Setting up ruby-activerecord-deprecated-finders (1.0.4-1) ...
+Processing triggers for systemd (229-4ubuntu21) ...
+Processing triggers for ureadahead (0.100.0-19) ...
+Errors were encountered while processing:
+ puppetmaster
+```
+
+Tämä johtuunee siitä, että olin hetkeä aikaisemmin purgennut puppetin koneelta?!?!?
+Palaan virheilmoituksiin vain, jos puppetin käytössä ilmenee ongelmia.
+
+Lisäsin puppet.conf tiedostoon dns alt namen
+
+```
+sudoedit /etc/puppet/puppet.conf
+
+dns_alt_names = puppet, einopuucee, einopuucee.lan
+```
+
+Tämän koneen kohdalla minun ei pitäisi joutua vaihtelemaan nimiä, tai poistelemaan avaimia.
+
+Loin Hello World moduulin
+
+```
+$ cd /etc/puppet/
+$ sudo mkdir -p /etc/manifests/ modules/helloworld/manifests/
+$ sudoedit modules/helloworld/manifests/init.pp
+```
+```
+  
+class helloworld {
+        file { '/tmp/helloFromMaster':
+                content => "See you at http://terokarvinen.com/tag/puppet\n"
+        }
+}
+```
+
+Tämän lisäksi loin site.pp tiedoston
+
+```
+sudoedit manifests/site.pp
+
+include helloworld
+```
+
+Testasin moduulin masterilla
+
+```
+$ sudo puppet apply -e 'class{'helloworld':}'
+Notice: Compiled catalog for einopuucee.lan in environment production in 0.18 seconds
+Notice: /Stage[main]/Helloworld/File[/tmp/helloFromMaster]/ensure: defined content as '{md5}d69e1336f25776f557a2ee309841751b'
+Notice: Finished catalog run in 0.25 seconds
+```
+```
+$ cat /tmp/helloFromMaster
+See you at http://terokarvinen.com/tag/puppet
+```
+
+# Vagrant orjan asetukset
+
+Asensin vagrantin ja loin virtuaalixubuntun
+
+`sudo apt-get -y install vagrant virtual`
+
+```
+$ vagrant init bento/ubuntu-16.04
+$ vagrant up
+$ vagrant ssh
+```
+Asensin virtuaalikoneelle puppetin
+
+```
+$ sudo apt-get update && sudo apt-get -y install puppet
+```
+
+
+
+
+
+
+
+## b) Säädä Windows-työpöytää. Voit esimerkiksi asentaa jonkin sovelluksen ja tehdä sille asetukset.
