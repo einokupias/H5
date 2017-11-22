@@ -62,6 +62,12 @@ dns_alt_names = puppet, einopuucee, einopuucee.lan
 
 Tämän koneen kohdalla minun ei pitäisi joutua vaihtelemaan nimiä, tai poistelemaan avaimia.
 
+edit: windowssia varten joudutaan lisäämään hosts kansioon .local pääte
+
+```sudoedit /etx/hosts
+127.0.1.1       einopuucee einopuucee.local
+```
+
 Loin Hello World moduulin
 
 ```
@@ -221,7 +227,7 @@ Testasin orjalla Helloworld moduulin ja se toimi.
 
 ## b) Säädä Windows-työpöytää. Voit esimerkiksi asentaa jonkin sovelluksen ja tehdä sille asetukset.
 
-Säädin väliaikaisesti "User Account Control Settings" kohtaan Never notify.
+Säädin väliaikaisesti "User Account Control Settings" kohtaan Never notify ja käynnistelin koneen uusiksi.
 
 Katsoin Masteriltani puppet version komennolla `puppet --version`, jotta osaan asentaa Windowssille vastaavan version.
 
@@ -231,13 +237,57 @@ Asentelin puppetin install wizardista.
 
 Asetin jo asnnusvaiheessa masterin nimeksi "einopuucee".
 
+Tarkistin vielä puppet.confista (C:\ProgramData\PuppetLabs\puppet\etc\puppet.conf), että masteri oli oikein.
 
+Latasin ja aasensin Bonjour Print Services for Windows, jotta .local osoite toimisi.
 
+https://support.apple.com/kb/dl999?locale=fi_FI
 
+Testasin vielä .local osoitteen toimivuuden syöttämällä Command Promttiin
 
+```ping einopuucee.local```
 
+mihin sain vastauksen.
 
+Tässä välissä loin masterilla HelloWindows moduulin
 
+```
+cd /etc/puppet
+sudo mkdir -p /etc/manifests/ modules/hellowin/manifests/
+sudoedit module/hellowin/manifests/init.pp
+```
+```
+class hellowindows {
+        file {"C:/hellotero":
+                content => "Hello Master\n",
+        }
+}
 
+```
 
+Sekä site.pp teidoston, jonne lisäsin:
 
+```
+sudoedit manidfests/site.pp
+
+class {hellowin:}
+```
+
+Takaisin Windowsille
+
+Avasin "puppet terminaalin" avaamalla "Start Command Prompt with Puppet" "Run as ADministrator"
+
+Syötin komennon
+
+```
+puppet agent -tdv
+```
+
+Ei niin yllättäen puppet kiukutteli certistä
+
+```
+Error: Could not request certificate: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond. - connect(2)
+Exiting; failed to retrieve certificate and waitforcert is disabled
+```
+
+Löytämässäni ohjeessa
