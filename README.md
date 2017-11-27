@@ -290,4 +290,29 @@ Error: Could not request certificate: A connection attempt failed because the co
 Exiting; failed to retrieve certificate and waitforcert is disabled
 ```
 
-Löytämässäni ohjeessa
+Master koneella kokeilin avata puppetin käyttämän palomuurin portin 8140
+
+Nyt komento meni läpi, ja ajaettaessa masterilla certtien listauksen näin koneeni.
+Allekirjoitin certin.
+
+```
+sudo puppet cert --list
+sudo puppet cert --sign
+```
+
+Ajoin orjalla jälleen `puppet agent -tdv` komennon, ja tällä kertaa syötteellä
+
+```
+Error: Could not request certificate: Server hostname 'einopuucee.local' did not match server certificate; expected one of einopuucee, DNS:einopuucee, DNS:einopuucee.lan, DNS:puppet
+Exiting; failed to retrieve certificate and waitforcert is disabled
+```
+
+Muutin orjan puppet kansioon server nameksi `einopuucee.lan`.
+
+Hakiessani moduulia sain virheilmoituksen:
+
+```
+Error: Failed to apply catalog: Parameter path failed on File[/tmp/helloFromMaster]: File paths must be fully qualified, not '/tmp/helloFromMaster' at /etc/puppet/modules/helloworld/manifests/init.pp:4
+```
+
+Poistin site.pp tiedostosta virtuaaliorjalleni tarkoitetun iclude linen, jonka jälkeen sain haettua moduulin windowssille ja c-kansioon oli ilmestynyt "hellotero" tiedosto.
